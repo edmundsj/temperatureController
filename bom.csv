@@ -1,11 +1,14 @@
-Part Name, Quantity, Source, Catalog Number, Link
-8.5A TEC,1,Digikey,345-1740-ND_,https://www.digikey.com/product-detail/en/TEC-20-33-31/345-1740-ND/9741968/?itemSeq=349654408
-Power NMOS,1,Digikey,SQ2318AES-T1_GE3CT-ND_,https://www.digikey.com/product-detail/en/SQ2318AES-T1_GE3/SQ2318AES-T1_GE3CT-ND/6595042/?itemSeq=349657256
-3-digit 7-segment display,2,Digikey,_160-1545-5-ND_,https://www.digikey.com/product-detail/en/LTC-4724JR/160-1545-5-ND/408218/?itemSeq=349666458
-MAX7219 Display Driver,1,Digikey,MAX7219CWG+TCT-ND_,https://www.digikey.com/product-detail/en/MAX7219CWG%2bT/MAX7219CWG%2bTCT-ND/4146791/?itemSeq=349667061
-Power Jack,1,Digikey,_839-54-00167-ND_,https://www.digikey.com/product-detail/en/54-00167/839-54-00167-ND/10459295/?itemSeq=349668384
-Temp-Sensing IC,1,Digikey,_1597-1651-ND_,https://www.digikey.com/product-detail/en/101020556/1597-1651-ND/9369931/?itemSeq=349671089
-10K Pot,1,Digikey,987-1710-ND_,https://www.digikey.com/product-detail/en/P120PK-Y25BR10K/987-1710-ND/5957454/?itemSeq=349673044
-2POS Screw Terminal,1,Digikey,_732-10955-ND_,https://www.digikey.com/product-detail/en/691137710002/732-10955-ND/6644051/?itemSeq=349675219
-0.2Ohm power sense resistor,1,Digikey,_696-1162-ND_,https://www.digikey.com/product-detail/en/PF2203-0R2F1/696-1162-ND/2447810/?itemSeq=349699745
-Nano Headers,2,Digikey,S7013-ND_,https://www.digikey.com/product-detail/en/PPTC151LFBN-RC/S7013-ND/810153/?itemSeq=349713274
+Verision,Part Name, Quantity, Source, Catalog Number, Link
+2,8.5A TEC,1,Digikey,345-1740-ND,https://www.digikey.com/product-detail/en/TEC-20-33-31/345-1740-ND/9741968/?itemSeq=349654408
+1,Power NMOS,1,Digikey,SQ2318AES-T1_GE3CT-ND,https://www.digikey.com/product-detail/en/SQ2318AES-T1_GE3/SQ2318AES-T1_GE3CT-ND/6595042/?itemSeq=349657256
+2,Power NPN,1,Digikey,BDW42GOS-ND_,https://www.digikey.com/product-detail/en/BDW42G/BDW42GOS-ND/1476196/?itemSeq=350783096
+2,3-digit 7-segment display,2,Digikey,160-1545-5-ND,https://www.digikey.com/product-detail/en/LTC-4724JR/160-1545-5-ND/408218/?itemSeq=349666458
+2,MAX7219 Display Driver,1,Digikey,MAX7219CWG+TCT-ND,https://www.digikey.com/product-detail/en/MAX7219CWG%2bT/MAX7219CWG%2bTCT-ND/4146791/?itemSeq=349667061
+2,Power Jack,1,Digikey,839-54-00167-ND,https://www.digikey.com/product-detail/en/54-00167/839-54-00167-ND/10459295/?itemSeq=349668384
+2,Temp-Sensing IC,1,Digikey,1597-1651-ND,https://www.digikey.com/product-detail/en/101020556/1597-1651-ND/9369931/?itemSeq=349671089
+2,10K Pot,1,Digikey,987-1710-ND,https://www.digikey.com/product-detail/en/P120PK-Y25BR10K/987-1710-ND/5957454/?itemSeq=349673044
+2,2POS Screw Terminal,1,Digikey,732-10955-ND,https://www.digikey.com/product-detail/en/691137710002/732-10955-ND/6644051/?itemSeq=349675219
+2,0.2Ohm power sense resistor,1,Digikey,696-1162-ND,https://www.digikey.com/product-detail/en/PF2203-0R2F1/696-1162-ND/2447810/?itemSeq=349699745
+2,Nano Headers,2,Digikey,S7013-ND,https://www.digikey.com/product-detail/en/PPTC151LFBN-RC/S7013-ND/810153/?itemSeq=349713274
+2,TO-220 Heatsink,1,Digikey,HS350-ND,https://www.digikey.com/product-detail/en/529802B02500G/HS350-ND/1216357/?itemSeq=350783079
+2,Standoff Pins,4,Digikey,36-25501-ND,https://www.digikey.com/product-detail/en/25501/36-25501-ND/1532180/?itemSeq=350475444

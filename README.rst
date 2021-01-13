@@ -3,19 +3,18 @@ TEC Temperature Controller PCB
 
 Issues in Version 1
 ----------------------
-- Need VDD, GND connections on header going to MCP9808 board in addition to SDA and SCL.
-- Need to make sure the ordering and connector matches that of the device PCB.
-- In the future, a couple of accessible header GND connections would be nice, even just for probing.
-- Should edit the silkscreen to include the directionality of the Arduino Nano's USB. 
-- Needs a power off button
-- My choice of resistor is not sufficient, the thing heats up and starts to smoke after a couple seconds at ~5A. 
-- Add a voltage divider to the gate of the transistor - we do not need more than ~4V applied to the gate. Ideally we would also convert the transistor range of ~2.5V-4V into the arduino's 0-5V. We could do this by placing the resistor at the source intsead of the drain of the transistor. This would be a good idea anyway to provide some negative feedback on our current and linearize our transfer function a little. It's possible this is an issue with the supply. I could try and apply a known voltage to the input jack.
-- The weird thing is this seems to work pretty well with the USB as a power source up to ~1A, but when I use the power brick all hell breaks loose.
-- It looks like the problem probably isn't with the brick, the voltage to the transistor appears to become unstable and starts to oscillate quite a bit. I think part of the issue is the noisy-ass supply
-- Closed-loop control of this transistor is proving to be more difficult than I had anticipated, especially given the uncertainty of the parameters involved, and the nonlinearity of the MOSFET. The measurements are also extremely noisy and I think this is contributing to the fluctuations.
-- I figured out the culprit - thermal runaway. A small (enough) amount of current heats the MOSFET, which causes the current to rise, which causes the MOSFET to heat more, and on, and on. It's not actually a problem with nonlinearity, just with the MOSFET getting too damn hot. There is instability, but it's not caused by nonlinearity - it's caused by thermal runaway of the MOSFET.
-- Thermal runaway WILL be an issue with BJT's as well, since the current gain does increase with temperature (by ~a factor of 3).
-- I'm probably going to want to add a small fan and choose a larger transistor package.
+- [FIXED v2] Need VDD, GND connections on header going to MCP9808 board in addition to SDA and SCL.
+- [FIXED v2] Need to make sure the ordering and connector matches that of the device PCB.
+- [FIXED v2] In the future, a couple of accessible header GND connections would be nice, even just for probing.
+- [FIXED v2] Should edit the silkscreen to include the directionality of the Arduino Nano's USB. 
+- [FIXED v2] Should swap out MOSFET for a more linear BJT
+- [FIXED v2] Swap out MOSFET for transistor with much lower thermal resistance
+- [FIXED v2] My choice of resistor is not sufficient, the thing heats up and starts to smoke after a couple seconds at ~5A. 
+
+Issues in Version 2
+-----------------------
+- Needs a relay to allow for bidirectional current flow through the Peltier module
+- Needs a power off / reset button
 
 Appendix - Debugging PCB
 ---------------------------
@@ -31,3 +30,11 @@ Appendix - Debugging PCB
 - Now for some reason the arduino has become inaccessible over the port I was using to communicate with it. Very odd. Too much current?
 - For some reason even plugging in the high-current source makes everything freak out. 
 - Time to do a high-current test. Yup, that was a miserable failure. Pretty sure I fried something. For some reason the current overshoots to ~5A and then refuses to fall back down. 
+
+- Add a voltage divider to the gate of the transistor - we do not need more than ~4V applied to the gate. Ideally we would also convert the transistor range of ~2.5V-4V into the arduino's 0-5V. We could do this by placing the resistor at the source intsead of the drain of the transistor. This would be a good idea anyway to provide some negative feedback on our current and linearize our transfer function a little. It's possible this is an issue with the supply. I could try and apply a known voltage to the input jack.
+- The weird thing is this seems to work pretty well with the USB as a power source up to ~1A, but when I use the power brick all hell breaks loose.
+- It looks like the problem probably isn't with the brick, the voltage to the transistor appears to become unstable and starts to oscillate quite a bit. I think part of the issue is the noisy-ass supply
+- Closed-loop control of this transistor is proving to be more difficult than I had anticipated, especially given the uncertainty of the parameters involved, and the nonlinearity of the MOSFET. The measurements are also extremely noisy and I think this is contributing to the fluctuations.
+- I figured out the culprit - thermal runaway. A small (enough) amount of current heats the MOSFET, which causes the current to rise, which causes the MOSFET to heat more, and on, and on. It's not actually a problem with nonlinearity, just with the MOSFET getting too damn hot. There is instability, but it's not caused by nonlinearity - it's caused by thermal runaway of the MOSFET.
+- Thermal runaway WILL be an issue with BJT's as well, since the current gain does increase with temperature (by ~a factor of 3).
+- I'm probably going to want to add a small fan and choose a larger transistor package.
