@@ -1,5 +1,17 @@
 TEC Temperature Controller PCB
 =================================
+This PCB is designed to monitor and control the temperature of an object heated or cooled with a thermoelectric cooler, and is capable of driving up to 8A
+
+Features
+----------
+- Uses Arduino Nano for control, measurement
+- Drives up to 8A of current through a thermoelectric cooler
+- Monitoring of actual current using a series sense resistor
+- Closed-loop control of temperature using MCP9808 remote temperature sensor
+- Two 3-digit 7-segment displays for temperature setpoint and measured value
+- Knob potentiometer for setting target temperature
+- Monitors current through with a series sense resistor
+- Passive cooling (~4K/W thermal resistance) with 1.5" radial heatsink
 
 Issues in Version 1
 ----------------------
@@ -15,6 +27,10 @@ Issues in Version 2
 -----------------------
 - Needs a relay to allow for bidirectional current flow through the Peltier module
 - Needs a power off / reset button
+
+Test Data
+-----------
+- Version 1 is able to drive current of <100mA using closed-loop control and a 5V USB supply, but is unable to drive higher currents due to thermal runaway.
 
 Appendix - Debugging PCB
 ---------------------------
