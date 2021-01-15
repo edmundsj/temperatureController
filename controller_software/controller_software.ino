@@ -1,4 +1,6 @@
 #include <SPI.h>
+#include "Seeed_MCP9808.h"
+
 #define CHIP_SELECT_PIN 10
 #define SHUTDOWN_REGISTER 0x0C
 #define DIGIT0_REGISTER 0x01
@@ -14,6 +16,9 @@
 #define INTENSITY_REGISTER 0x0A
 #define TSET_PIN A1
 #define DRIVE_PIN 5
+
+#define TEMP_SENSOR_ADDRESS 0x18
+#define TEMP_READ_REGISTER 0b0101
 
 #define OFFSET 0
 #define ISNS_HIGH A0
@@ -45,6 +50,9 @@ float Ti = 10; // Integral time constant
 float filter_coefficient = 0; // zero is equivalent to no filter.
 float sampling_time = 0.02;
 
+float measured_temp = 0;
+
+MCP9808 sensor;
 
 void setup() {
   // put your setup code here, to run once:
@@ -53,9 +61,19 @@ void setup() {
   pinMode(TSET_PIN, INPUT);
   pinMode(ISNS_HIGH, INPUT);
   pinMode(ISNS_LOW, INPUT);
+  pinMode(2, OUTPUT);
+  digitalWrite(2, HIGH);
+    
   SPI.begin();
   Serial.begin(9600);
   Serial.print(measured_current);
+
+  // Setup the tempertature sensor interface
+  if(sensor.init())
+    {
+        Serial.println("sensor init failed!!");
+    }
+    Serial.println("sensor init!!");
   
 }
 
@@ -80,7 +98,7 @@ void loop() {
   }
   else {
     delay(sampling_time * 1000);
-    measureCurrent();
+    measured_current = measureCurrent();
     controlCurrent();
     //getTargetTemperature();
     //writeSetpointDisplayCurrent(desired_temperature);
@@ -89,7 +107,7 @@ void loop() {
     getTargetVoltage();
     writeSetpointDisplayVoltage();
     writeActualDisplayCurrent(measured_current);
-    Serial.println(measured_current);
+    measured_temp = measureTemperature();
   }
 }
 
@@ -182,11 +200,11 @@ void getTargetVoltage(void) {
 /* Measure the current flowing through the TIA using the voltage drop across
  * an 0.2Ohm sense resistor. It also filters the current.
  */
-void measureCurrent(void) {
+float measureCurrent(void) {
   int high_current_reading = analogRead(ISNS_HIGH);
   int low_current_reading = analogRead(ISNS_LOW);
   //Serial.println(high_current_reading - low_current_reading);
-  measured_current = filter_coefficient * measured_current + 
+  return filter_coefficient * measured_current + 
     (1 - filter_coefficient)* (high_current_reading - low_current_reading)/1023.0 * 4.8 / 0.2;
 }
 
@@ -211,4 +229,11 @@ void controlCurrent(void) {
 
 void controlVoltage(void) {
   analogWrite(DRIVE_PIN, drive_voltage);
+}
+
+float measureTemperature(void) {
+  float temp=0;
+  //Get temperature ,a float-form value.
+  sensor.get_temp(&temp);
+  return temp;
 }
