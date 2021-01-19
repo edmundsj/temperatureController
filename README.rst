@@ -4,8 +4,9 @@ This PCB is designed to monitor and control the temperature of an object heated 
 
 Features
 ----------
-- Uses Arduino Nano for control, measurement
-- Drives up to 8A of current through a thermoelectric cooler
+- Uses Arduino Nano for control, measurement. 
+- Computer-independent measurement and temperature control using on-board interface
+- Drives up to 8A of current through a thermoelectric cooler when powered by external power adapter, <1A when powered over USB.
 - Monitoring of actual current using a series sense resistor
 - Closed-loop control of temperature using MCP9808 remote temperature sensor
 - Two 3-digit 7-segment displays for temperature setpoint and measured value
@@ -54,3 +55,12 @@ Appendix - Debugging PCB
 - I figured out the culprit - thermal runaway. A small (enough) amount of current heats the MOSFET, which causes the current to rise, which causes the MOSFET to heat more, and on, and on. It's not actually a problem with nonlinearity, just with the MOSFET getting too damn hot. There is instability, but it's not caused by nonlinearity - it's caused by thermal runaway of the MOSFET.
 - Thermal runaway WILL be an issue with BJT's as well, since the current gain does increase with temperature (by ~a factor of 3).
 - I'm probably going to want to add a small fan and choose a larger transistor package.
+
+Version 2 Experiments
+_______________________
+Prediction (P): Using a proportional only controller with a value of Kp, we should see the steady-state error of the system be kp / (1 + kp), and the 95% settling time should be (1+Kp) times faster than the settling time of the filter.
+Prediction (PI): Using a PI controller, we should see zero steady-state error, and for a given Kp, we should see the dynamics improve by decreasing ti (the integral time) until about wi = wL/4 * (1+Kp)^2. where wL is the frequency of the lowpass anti-aliasing filter. At this point, the characteristic frequency  of the overall system is given by wL/2 * (1+Kp) assuming zeta=1 (critical damping).
+Prediction (PI): Since we are using PWM, our error will not be zero even when it *should* be zero. We have an extra sinusoid riding on top of that. This could lead to instability of the system if the anti-aliasing filter is not low-frequency enough. Specifically, we need that fL^2 * Kp^2 / (fs*fPWM) be less than 1, and we need to pray that our PWM is aliased to a reasonably high frequency compared to the sampling frequenncy. This places a restriction on Kp. and our ultimate dynamic performance, giving us a maximum natural frequency of fs*fPWM/(2*fL), where fs is our sampling frequency. For a 1Hz lowpass filter, a 1kHz PWM frequency, and a 20Hz sampling frequency, the maximum time constant we can achieve is ~20us, which means we should have plenty of margin to avoid instability.
+We can create a PI controller by setting the current output at time n to equal
+In = I(n-1) + Kp*(Ierr(n) - Ierr(n-1)) + wi*dt*Ierr(n)
+Where I(n-1) was the previous current, Ierr is the measured minus the desired value of the current, dt is the time between samples, wi is the integral gain (in frequency form)
