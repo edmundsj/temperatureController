@@ -1,5 +1,9 @@
 #include <SPI.h>
 #include "Seeed_MCP9808.h"
+#include <elapsedMillis.h>
+
+elapsedMillis display_time_elapsed;
+elapsedMillis measurement_time_elapsed;
 
 #define CHIP_SELECT_PIN 10
 #define SHUTDOWN_REGISTER 0x0C
@@ -24,17 +28,24 @@
 #define ISNS_HIGH A0
 #define ISNS_LOW A2
 
+#define SENSE_RESISTANCE 0.2
 #define TEMPERATURE_MAX 65
 #define TEMPERATURE_MIN -25
 #define SAMPLES_TO_AVERAGE 500
 #define CURRENT_MAX 4
 #define CURRENT_MIN 0
 
+#define DISPLAY_REFRESH_PERIOD 100
+#define MEASUREMENT_PERIOD 50
+
+bool heat_mode = true;
 uint8_t command_byte = 0;
 uint8_t data_byte = 0;
 bool display_initialized = false;
 float new_desired_temperature = 50.0;
 float desired_temperature = 50.0;
+float temperature_error = 0;
+float previous_temperature_error = 0;
 float read_temperature = 20.0;
 uint16_t raw_data = 0;
 uint32_t total_data = 0;
@@ -46,9 +57,11 @@ float previous_current_error = 0;
 float new_desired_current = 0;
 float drive_voltage = 0.0;
 float Zp = 2.0; // Units of Ohms, or V/A, determines the dynamics of the system.
-float Ti = 10; // Integral time constant
-float filter_coefficient = 0; // zero is equivalent to no filter.
-float sampling_time = 0.02;
+float Ti_ms = 700; // Integral time constant, in ms
+float filter_coefficient = 0.9; // zero is equivalent to no filter, 1 is an infinite time filter.
+uint16_t sampling_time_ms = 20;
+float filtered_current = 0;
+float Kp = 0.9;
 
 float measured_temp = 0;
 
@@ -61,53 +74,44 @@ void setup() {
   pinMode(TSET_PIN, INPUT);
   pinMode(ISNS_HIGH, INPUT);
   pinMode(ISNS_LOW, INPUT);
-  pinMode(2, OUTPUT);
-  digitalWrite(2, HIGH);
     
   SPI.begin();
   Serial.begin(9600);
-  Serial.print(measured_current);
 
   // Setup the tempertature sensor interface
+  
   if(sensor.init())
     {
         Serial.println("sensor init failed!!");
     }
     Serial.println("sensor init!!");
-  
+    initializeDisplay();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if(display_initialized == false) {
+    if(measurement_time_elapsed > MEASUREMENT_PERIOD) {
+      measured_current = measureCurrent();
+      measured_temp = measureTemperature();
+      Serial.println(measured_temp);
+      controlTemperature();
+      measurement_time_elapsed = 0;
+      
+    if(display_time_elapsed > DISPLAY_REFRESH_PERIOD) {
+      //getTargetVoltage();
+      //writeSetpointDisplayVoltage();
+      getTargetTemperature();
+      writeSetpointDisplayTemperature(desired_temperature);
+      writeActualDisplayTemperature(measured_temp);
+      display_time_elapsed = 0;
+    }
     
-
-    // take the device out of shutdown mode and put it into display test mode
-    SPIWrite(SHUTDOWN_REGISTER, 1);
-
-    // Enable BCD decoding for each register
-    SPIWrite(DECODE_MODE_REGISTER, 0xFF);
-
-    // Drive all the display digits
-    SPIWrite(SCAN_LIMIT_REGISTER, 0x05); 
-
-    // Set the intensity (duty cycle) to 5/32.
-    SPIWrite(INTENSITY_REGISTER, 0x02);
-
-    display_initialized = true;
-  }
-  else {
-    delay(sampling_time * 1000);
-    measured_current = measureCurrent();
-    controlCurrent();
     //getTargetTemperature();
     //writeSetpointDisplayCurrent(desired_temperature);
     //writeActualDisplayCurrent(measured_temperature);
     //getTargetCurrent();
-    getTargetVoltage();
-    writeSetpointDisplayVoltage();
-    writeActualDisplayCurrent(measured_current);
-    measured_temp = measureTemperature();
+    
+    
   }
 }
 
@@ -201,21 +205,35 @@ void getTargetVoltage(void) {
  * an 0.2Ohm sense resistor. It also filters the current.
  */
 float measureCurrent(void) {
+  previous_current_error = current_error;
   int high_current_reading = analogRead(ISNS_HIGH);
   int low_current_reading = analogRead(ISNS_LOW);
-  //Serial.println(high_current_reading - low_current_reading);
-  return filter_coefficient * measured_current + 
-    (1 - filter_coefficient)* (high_current_reading - low_current_reading)/1023.0 * 4.8 / 0.2;
+  int delta_reading = high_current_reading - low_current_reading;
+  float voltage = delta_reading * 4.8 / 1023.0;
+  float current = voltage / SENSE_RESISTANCE;
+  current_error = desired_current - current;
+  filtered_current = filter_coefficient * filtered_current + (1 - filter_coefficient) * current;
+  return current;
+}
+
+float measureTemperature(void) {
+  previous_temperature_error = temperature_error;
+  float temp=0;
+  //Get temperature ,a float-form value.
+  sensor.get_temp(&temp);
+  temperature_error = desired_temperature - temp;
+  return temp;
 }
 
 /*
- * Implements a P-I controller for controlling the current.
+ * Implements a P-I controller for controlling the current. DOES NOT CURRENTLY WORK WELL BELOW 3A DUE TO OUR
+ * CRAPPY ADC.
  */
 void controlCurrent(void) {
   current_error = desired_current - measured_current;
 
   // Implements PI control of our current
-  drive_voltage += 255 / 5.0 * Zp *((1 + sampling_time / Ti )*current_error - previous_current_error); 
+  drive_voltage += Kp*((1 + sampling_time_ms / Ti_ms )*current_error - previous_current_error); 
   
   //TEMPORARY HACK - REMOVE
   //drive_voltage = desired_current / CURRENT_MAX * 255;
@@ -227,13 +245,35 @@ void controlCurrent(void) {
   previous_current_error = current_error;
 }
 
-void controlVoltage(void) {
-  analogWrite(DRIVE_PIN, drive_voltage);
+void controlTemperature(void) {
+  if(heat_mode == true) {
+    drive_voltage += Kp*((1 + sampling_time_ms / Ti_ms)*temperature_error - previous_temperature_error);
+  }
+  else if(heat_mode == false) {
+    drive_voltage += Kp*((1 + sampling_time_ms / Ti_ms)*(-1*temperature_error) - (-1)*previous_temperature_error);
+  }
+  if(drive_voltage < 0) drive_voltage = 0;
+  if(drive_voltage > 255) drive_voltage = 255;
+  
+  analogWrite(DRIVE_PIN, int(drive_voltage));
 }
 
-float measureTemperature(void) {
-  float temp=0;
-  //Get temperature ,a float-form value.
-  sensor.get_temp(&temp);
-  return temp;
+void controlVoltage(uint8_t voltage_pwm) {
+  analogWrite(DRIVE_PIN, voltage_pwm);
+}
+
+
+void initializeDisplay(void) {
+    SPIWrite(SHUTDOWN_REGISTER, 1);
+
+    // Enable BCD decoding for each register
+    SPIWrite(DECODE_MODE_REGISTER, 0xFF);
+
+    // Drive all the display digits
+    SPIWrite(SCAN_LIMIT_REGISTER, 0x05); 
+
+    // Set the intensity (duty cycle) to 5/32.
+    SPIWrite(INTENSITY_REGISTER, 0x02);
+
+    display_initialized = true;
 }

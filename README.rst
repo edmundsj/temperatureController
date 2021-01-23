@@ -26,6 +26,7 @@ Issues in Version 1
 
 Issues in Version 2
 -----------------------
+- [FIXED v3] R4 is too close to the heatsink, difficult to access.
 - Needs a relay to allow for bidirectional current flow through the Peltier module
 - Needs a power off / reset button
 
@@ -64,3 +65,42 @@ Prediction (PI): Since we are using PWM, our error will not be zero even when it
 We can create a PI controller by setting the current output at time n to equal
 In = I(n-1) + Kp*(Ierr(n) - Ierr(n-1)) + wi*dt*Ierr(n)
 Where I(n-1) was the previous current, Ierr is the measured minus the desired value of the current, dt is the time between samples, wi is the integral gain (in frequency form)
+
+- When testing the TEC controller with a 10k base resistor and a multimeter to measure the current, it is able to drive up to 4A without issue. Around 4A I heard a popping sound from the TEC, and I'm not sure what caused that, but it feels very hot on both sides. I suspect I may have gone above its rated voltage. This time, though, no issues with thermal runaway, which is encouraging. It's possible the TEC is getting a higher voltage dropped across it than intended. I really need to attach it to a heatsink so I can see if it's actually cooling one side. The whole thing is definitely heating up, which should be expected. Now to stress test the whole system.
+- The display output is currently pretty meaningless. 
+- I really need a way of thermally connecting objects in a permanent but reversible way. Some thermal tape or something. Double-sided copper tape could actually do a reasonable job of this, where is mine? Next time I'm home I should grab the copper tapeo
+For now, I'm just going to use silver epoxy and assume the TEC will be permanently attached. I have another one if needed.
+
+Temperature Test
+___________________
+- Room temp is measured to be 23.6C.
+- Looks like my on-board measured current is way higher than what my multimeter is reading - it might be giving peak current and not average current? I don't know.$
+- After we got above 600mA, the current started giving expected values again. I expect this is an ADC biasing issue. After increasing the current again, the measured current is again all over the place. It's down to 350mA. I might just need a better ADC.
+- Now at 750mA we are measuring 210mA, this is absolute and utter nonsense. I need a better way of doing this. The present way of measuring current seems to be worse than useless. Perhaps it's an aliasing issue?
+- At 1A the main heatsink isn't heating up much. Current is quite stable over time (within a few mA) less than 1A.
+- Above 1A, the current is starting to fluctuate some more, +/- 20mA max.
+- At 1.4A, the on-board heatsink is starting to heat up to become uncomfortably warm to the touch.
+- We are able to reach a temperature differential of 45C so far at 1.5A going in the warm direction. Excellent so far. I'm going to shoot for 70C or 3.5A DC, whichever comes first.
+- The current is starting to fluctuate a little more.
+- At 1.6A the heatsink is still warm to the touch, but not excessively so. The measured current is 1.14A, about 50% off. I think I'm just asking way too much of the poor nano's ADC.
+- At 1.9A the heat sink is getting warmer, but it's doing it's job.
+- At 2.02A, I heard a weird sound I think from the TEC. This corresponded to a delta T of 63C, very close to the max rating for the TEC, so I stopped and cooled the thing down.
+- The Al heatsink I attached this thing to doesn't feel significantly hotter. I am now going to change the polarity of the current.
+- Room temp is measured to be 23C by an external temp sensor.
+- Looks like the heatsink did heat up by ~5C during operation. I may have to pay close attention to thermal management of the TEC itself, as it is dissipating power.
+- I am going to wait for the heatsink to cool down closer to 23C, then do the experiment in the reverse direction.
+- The TEC appears to be broken in the reverse direction - reverse current isn't doing much at all to decrease the current. This may have been the result of my earlier mishap.
+- This is not working. I'm going to go up to 2A and see what happens.
+- At -3A, it only gets down to ~16C. I think it's broken.
+- At -3.6A, it's down to 11C. Not nearly cold enough. I had the text facing up for this experiment.
+- On the upside, the PCB has no trouble sending 3.6A, although this is as high as we can go at 100% duty cycle with a 10k resistor going to the base of the transistor. I'm going to try swapping out the TEC. Current flowing into the red wire is the problem configuration.
+- Heatsink gets uncomfortably hot after a couple of minutes, nylon screw is holding, nothing is on fire.
+- Above ~2A the ADC is actually quite accurate.
+- The TEC appears to increase the heatsink temp during operation by ~3-4C. Time to crank up the volume, increase the current to the max rated value. Also see how my PCB handles ~6-7A. The other TEC is almost certainly damaged.
+- Looks like I cannot get below ~1C due to self-heating of the TEC. At 4.25A the PCB heatsink is getting very hot to the touch, but no magic smoke. After a couple minutes the temperature is going up, now up to 3.5C. Now we're up to 5C. According to my IC, the temp is 60C at 4.2A. The current has only been reduced by ~50mA over ~10min. I can try driving the TEC even harder, up to 8A, with a smaller base resistor. I can go down to 1k. The PCB itself does not feel like it is heating up.
+- The Al heatsink temp has increased to 33C from 23C. The heatsink I am using needs to do a better job staying at room temperature.
+- with a Kp of 0.1, the overshoot for a target of 33.9C in heat mode was 0.8C, and it takes awhile for the controller to get down to 33.9, I suspect due to self-heating of the TEC. Larger Kp would be better.
+- A Kp of 0.3 is faster with no stability issues.
+- A Kp of 0.9 is even faster and has ~2C overshoot, which is very much acceptable. Let's now tune Ti.
+- A Ti of 300ms is too fast - I get some instability. I should also consider restricting the current on the positive direction.
+- A Ti of 700ms gives a 3C overshoot, followed by an 0.7C undershoot, followed by a 0.3C overshoot. For a 1C rise, there is a 0.3C overshoot. This is more than acceptable.
