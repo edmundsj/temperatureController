@@ -12,3 +12,11 @@ Verision,Part Name, Quantity, Source, Catalog Number, Link
 2,Nano Headers,2,Digikey,S7013-ND,https://www.digikey.com/product-detail/en/PPTC151LFBN-RC/S7013-ND/810153/?itemSeq=349713274
 2,TO-220 Heatsink,1,Digikey,HS350-ND,https://www.digikey.com/product-detail/en/529802B02500G/HS350-ND/1216357/?itemSeq=350783079
 2,Standoff Pins,4,Digikey,36-25501-ND,https://www.digikey.com/product-detail/en/25501/36-25501-ND/1532180/?itemSeq=350475444
+3,NMOS Transistor,1,Digikey,DMN63D8LW-13DICT-ND,https://www.digikey.com/en/products/detail/diodes-incorporated/DMN63D8LW-13/5722399
+3,"5V, 8A, 62R Relay",1,Digikey,G2RL-2-DC5,https://www.digikey.com/en/products/detail/omron-electronics-inc-emc-div/G2RL-2-DC5/1789837?s=N4IgTCBcDaIOJgEoBkC0ZUBEDCBWEAugL5A
+3,MCP Dual Opamp,1,Digikey,MCP6L02T-E/SNCT-ND_,https://www.digikey.com/product-detail/en/MCP6L02T-E%2fSN/MCP6L02T-E%2fSNCT-ND/2060115/?itemSeq=352014804
+3,10uF 0805 cap,3,Digikey,,
+3,100vF 0805 cap,2,Digikey,,
+3,10k 0805 Resistor,6,Digikey,,
+3,1k 0805 Res,1,Digikey,,
+3,30k 0805 Res,1,Digikey,,

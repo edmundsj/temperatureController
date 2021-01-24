@@ -26,13 +26,17 @@ Issues in Version 1
 
 Issues in Version 2
 -----------------------
-- [FIXED v3] R4 is too close to the heatsink, difficult to access.
-- Needs a relay to allow for bidirectional current flow through the Peltier module
-- Needs a power off / reset button
+- [FIXED v3] R4 is too close to the heatsink, difficult to access. Moved.
+- [FIXED v3] Added capacitor for filtering of input drive voltage
+- [FIXED v3] Added 2x2 ground header pins for probing
+- [FIXED v3] Added relay with drive transistor to allow bidirectional current flow through TEC
+- [FIXED v3] Current sensing is unreliable due to ADC being near rails, added biased buffer amp
+- Would be nice to add silkscreen / footprint for heatsink to get a sense of where it will go.
 
 Test Data
 -----------
 - Version 1 is able to drive current of <100mA using closed-loop control and a 5V USB supply, but is unable to drive higher currents due to thermal runaway.
+- Version 2 is able to drive at least +/- 4.5A with the main heatsink rising to 60C. TEC temperature control works over range of 1C - 80C with response time of ~10s and overshoot of 30%. 
 
 Appendix - Debugging PCB
 ---------------------------
