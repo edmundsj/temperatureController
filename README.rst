@@ -30,8 +30,8 @@ Issues in Version 2
 - [FIXED v3] Added capacitor for filtering of input drive voltage
 - [FIXED v3] Added 2x2 ground header pins for probing
 - [FIXED v3] Added relay with drive transistor to allow bidirectional current flow through TEC
-- [FIXED v3] Current sensing is unreliable due to ADC being near rails, added biased buffer amp
-- Would be nice to add silkscreen / footprint for heatsink to get a sense of where it will go.
+- [FIXED v3] Added silkscreen + courtyard + mounting holes for main heatsink
+- [FIXED v3] Current sensing is unreliable due to ADC being near rails, added opamp buffer + biasing
 
 Test Data
 -----------
