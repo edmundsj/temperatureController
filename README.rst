@@ -13,6 +13,8 @@ Features
 - Knob potentiometer for setting target temperature
 - Monitors current through with a series sense resistor
 - Passive cooling (~4K/W thermal resistance) with 1.5" radial heatsink
+- 20mA accurate current control
+- TEC temperature regulation within 0.1C
 
 Issues in Version 1
 ----------------------
@@ -32,6 +34,12 @@ Issues in Version 2
 - [FIXED v3] Added relay with drive transistor to allow bidirectional current flow through TEC
 - [FIXED v3] Added silkscreen + courtyard + mounting holes for main heatsink
 - [FIXED v3] Current sensing is unreliable due to ADC being near rails, added opamp buffer + biasing
+
+Issues in Version 3
+-----------------------
+- Standoffs should be as far to the outside to avoid tipping the board when using screw terminals
+- Need to add test piont for VDR_F. 
+- C4 should be removed. We have no business filtering a voltage going to the base of the BJT.
 
 Test Data
 -----------
@@ -73,7 +81,7 @@ Where I(n-1) was the previous current, Ierr is the measured minus the desired va
 - When testing the TEC controller with a 10k base resistor and a multimeter to measure the current, it is able to drive up to 4A without issue. Around 4A I heard a popping sound from the TEC, and I'm not sure what caused that, but it feels very hot on both sides. I suspect I may have gone above its rated voltage. This time, though, no issues with thermal runaway, which is encouraging. It's possible the TEC is getting a higher voltage dropped across it than intended. I really need to attach it to a heatsink so I can see if it's actually cooling one side. The whole thing is definitely heating up, which should be expected. Now to stress test the whole system.
 - The display output is currently pretty meaningless. 
 - I really need a way of thermally connecting objects in a permanent but reversible way. Some thermal tape or something. Double-sided copper tape could actually do a reasonable job of this, where is mine? Next time I'm home I should grab the copper tapeo
-For now, I'm just going to use silver epoxy and assume the TEC will be permanently attached. I have another one if needed.
+- For now, I'm just going to use silver epoxy and assume the TEC will be permanently attached. I have another one if needed.
 
 Temperature Test
 ___________________
@@ -108,3 +116,28 @@ ___________________
 - A Kp of 0.9 is even faster and has ~2C overshoot, which is very much acceptable. Let's now tune Ti.
 - A Ti of 300ms is too fast - I get some instability. I should also consider restricting the current on the positive direction.
 - A Ti of 700ms gives a 3C overshoot, followed by an 0.7C undershoot, followed by a 0.3C overshoot. For a 1C rise, there is a 0.3C overshoot. This is more than acceptable.
+
+Debugging Version 3
+____________________
+- First, let's check whether the TEC is appropriately connected when everything is off. TEC_H should be connected to VDD, and TEC_L to VSNSH. This is indeed the case. The displays are also being driven properly, and the temperature readout is nominal (23.3C). The pot is working as well. Now time to check the voltages. VDD/2 is 2.35V, and everything else is behaving properly. Now I need to modify the code to give a readout of current.
+- For some reason, there's significant nonlinearity in the current. Before we get to some threshold duty cycle, the current is very close to zero. Are we using the right transistor? A BJT should be perfectly linear.
+- The current drift is also pretty extreme - from 700mA, the current is rising to over 1A without doing anything to it. This was not typical behavior on the previous board. The current continues rising, it's up to 1.2A, when I'm driving with a duty cycle of 66/255 and the heatsink doesn't feel like it's even getting warm. At least the current sensing mechanism is working :) It's accurate to within ~100mA. The current has now risen to 1.4A, and continues to rise. Now it's at 1.5A. The relay doesn't feel warm to the touch at all. The current continues to rise. Now it's at 1.7A, and the heatsink is getting considerably warmer. Turning the duty cycle down to 58/255 pushes the current down to 500mA, and now it's starting to fall. This smells like a temperature issue. But why was it not present in the last PCB? I need to measure the voltage across the drive resistor, and Vbe to see what doesn't make sense. Now the current is down to 280mA.  Now down to 150mA
+- The measured voltage at the base of the transistor has a 1.1V offset, and there is a transient rise of about 100mV across our 1k resistor. This is really weird - the direction of the current appears to reverse. During duty cycling almost all the volage is dropped across the resistor. Perhaps this has something to do with the capacitor I added at the input, C4? This wasn't there before. Here's my hypothesis. It looks like the capacitor is maintaining the voltage at the base at a very high value, so what we really have is exponential (voltage from base to emitter) control of our BJT. C4 should not exist, it was a terrible idea to put it there in the first place.
+- This also explains why there's so much temperature drift - we're getting the e^{-1/kT} dependence on voltage rather than the hFE vs. temperature dependence.
+- Now the displays are flickering and the arduino isn't responding to commands. This is because the TEC is transiently drawing too much current during duty cycling. I will need to separate the TEC voltage supply from the arduino voltage supply in future versions. This will allow me to use other voltages and other TECs as well.
+- When I connect the TEC something is making a really annoying high-frequency sound. WOAH. This appears to be due to making a connection to the TEC itself. The contact gap is making the sound. The 1k resistor looks good, it gives up to 3.5A at a voltage of ~140. Now time to implement current control and temperature control. The current also looks good, tracking the actual current within ~20mA of the actual value over the range 0-4A.
+- For some reason the displays decided to have a heart attack and were all zeros. Re-uploading the code fixed this- At very low duty cycles our current measurement is not working well at all. It's oscillating all over the place. I think this is because we're now measuring a pulsed current, and our filter is not nearly aggressive enough. Personally I think we just bypass current control altogether.
+- For some reason, my controlTemperature() function is crashing the arduino. Everything is hanging after that function.
+- It appears to be the digitalWrite() command that is crashing the system. This is truly baffling. I can hear the relay clicking. Here's my guess - our transistor is not having a voltage applied to its gate, but we are actually applying a voltage directly to the relay. It takes up more current than our pins can drive and could potentially lock out our arduino.
+- It looks like when I write the pin HIGH on a blank sheet of code, everything works just fine. There must be something conflicting with this? The serial monitor appears to be a cause of the issue.
+- At 1kOhm we can drive a maximum of 4.6A of current, which gets us down to about 7.7C. The heatsink the TEC is attached to is definitely getting a little warm.
+- The CPU heatsink is getting warm to the touch, we are now only able to get down to 13.3C at 4.6A. Do we want to go up in drive current? Everything here is rated for 8A, so it would be kosher. Looks like the actual temperature of the heatsink when we were driving the other side of it to 15C is at least 35C - about 12C above room temperature. If we want to get <10C, we're going to have to actively cool the CPU heatsink, either with a fan or liquid.
+- The simplest way of mounting this heatsink is just to adapt the heatsink I currently have via a <25mm diameter, >1.5cm height cylinder and attach it directly to the backside of my existing cage system. I'll ask the machine shop what they have. In the meantime, I bought a fan. Should help to keep the heatsink cool.
+- For a 10C positive step, the 90% rise time with Kp = 0.5, Ti = 0.7s is ~50s, and the 1% settling time is 1min50s. Let's try increasing the I. With Kp o* 0.5 and Ti of 0.3, there is a 2C overshoot and then a 1C undershoot, and the total 1% settling time is about 1min20s. Going from 30C->20C there is a 3 degree overshoot, which bottoms out by 35s and starts to increase.
+
+* Rise time to 90% of the target value
+** Settling time to within 0.1 degree of the target value, equivalent to 1% settling time.
+
+- The temperature setpoint is drifting around like crazy, and the displays are sometimes dimming. It doesn't seem to have anything to do with the relay, but I suspect it's drift of the voltage source itself used to supply the potentiometer I'm using. This is pretty annoying and will make it more difficult to interpret results. Found the problem - the damn supply wasn't plugged in, it was using USB power.
+
+Looks like the max current is 4.6A, which corresponds to a Vce of about 1V, a drop across our resistor of about 1V, and a drop across the TEC of 3V. The constraining factor I did not account for is Vce of the transistor.

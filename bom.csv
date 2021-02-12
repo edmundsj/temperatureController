@@ -1,6 +1,5 @@
 Verision,Part Name, Quantity, Source, Catalog Number, Link
 2,8.5A TEC,1,Digikey,345-1740-ND,https://www.digikey.com/product-detail/en/TEC-20-33-31/345-1740-ND/9741968/?itemSeq=349654408
-1,Power NMOS,1,Digikey,SQ2318AES-T1_GE3CT-ND,https://www.digikey.com/product-detail/en/SQ2318AES-T1_GE3/SQ2318AES-T1_GE3CT-ND/6595042/?itemSeq=349657256
 2,Power NPN,1,Digikey,BDW42GOS-ND,https://www.digikey.com/product-detail/en/BDW42G/BDW42GOS-ND/1476196/?itemSeq=350783096
 2,3-digit 7-segment display,2,Digikey,160-1545-5-ND,https://www.digikey.com/product-detail/en/LTC-4724JR/160-1545-5-ND/408218/?itemSeq=349666458
 2,MAX7219 Display Driver,1,Digikey,MAX7219CWG+TCT-ND,https://www.digikey.com/product-detail/en/MAX7219CWG%2bT/MAX7219CWG%2bTCT-ND/4146791/?itemSeq=349667061
@@ -15,6 +14,7 @@ Verision,Part Name, Quantity, Source, Catalog Number, Link
 3,NMOS Transistor,1,Digikey,DMN63D8LW-13DICT-ND,https://www.digikey.com/en/products/detail/diodes-incorporated/DMN63D8LW-13/5722399
 3,"5V, 8A, 62R Relay",1,Digikey,G2RL-2-DC5,https://www.digikey.com/en/products/detail/omron-electronics-inc-emc-div/G2RL-2-DC5/1789837?s=N4IgTCBcDaIOJgEoBkC0ZUBEDCBWEAugL5A
 3,MCP Dual Opamp,1,Digikey,MCP6L02T-E/SNCT-ND_,https://www.digikey.com/product-detail/en/MCP6L02T-E%2fSN/MCP6L02T-E%2fSNCT-ND/2060115/?itemSeq=352014804
+3,6Pos SMD Header,1,Digikey,455-2264-1-ND,https://www.digikey.com/product-detail/en/jst-sales-america-inc/S6B-XH-SM4-TB(LF)(SN)/455-2264-1-ND/1651062
 3,10uF 0805 cap,3,Digikey,,
 3,100vF 0805 cap,2,Digikey,,
 3,10k 0805 Resistor,6,Digikey,,

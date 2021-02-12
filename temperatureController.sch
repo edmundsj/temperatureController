@@ -790,8 +790,6 @@ F 3 "~" H 6700 4500 50  0001 C CNN
 	1    6700 4500
 	0    -1   1    0   
 $EndComp
-Text Label 7400 3400 0    50   ~ 0
-VSNSH_F
 $Comp
 L Connector:TestPoint TP6
 U 1 1 601835FC
@@ -805,33 +803,6 @@ F 3 "~" H 5850 3600 50  0001 C CNN
 $EndComp
 Text Label 5250 4200 0    50   ~ 0
 VSNSL
-$Comp
-L Device:C C4
-U 1 1 600C8DCC
-P 4800 4750
-F 0 "C4" H 4915 4796 50  0000 L CNN
-F 1 "10uF" H 4915 4705 50  0000 L CNN
-F 2 "Capacitor_SMD:C_0805_2012Metric_Pad1.15x1.40mm_HandSolder" H 4838 4600 50  0001 C CNN
-F 3 "~" H 4800 4750 50  0001 C CNN
-	1    4800 4750
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR05
-U 1 1 600CA0C5
-P 4800 5000
-F 0 "#PWR05" H 4800 4750 50  0001 C CNN
-F 1 "GND" H 4805 4827 50  0000 C CNN
-F 2 "" H 4800 5000 50  0001 C CNN
-F 3 "" H 4800 5000 50  0001 C CNN
-	1    4800 5000
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	4800 5000 4800 4900
-Wire Wire Line
-	4800 4600 4800 4450
-Connection ~ 4800 4450
 $Comp
 L Relay:G2RL-2-DC5 RL1
 U 1 1 600E0078
