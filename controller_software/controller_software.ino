@@ -2,6 +2,7 @@
 #include "Seeed_MCP9808.h"
 #include "displays.h"
 #include <elapsedMillis.h>
+#include "nano_scpi.h"
 
 elapsedMillis display_time_elapsed;
 elapsedMillis measurement_time_elapsed;
@@ -22,7 +23,7 @@ elapsedMillis measurement_time_elapsed;
 #define SENSE_RESISTANCE 0.2
 #define TEMPERATURE_MAX 65
 #define TEMPERATURE_MIN -25
-#define SAMPLES_TO_AVERAGE 500
+#define SAMPLES_TO_AVERAGE 25
 #define CURRENT_MAX 4
 #define CURRENT_MIN 0
 
@@ -33,12 +34,10 @@ bool heat_mode = true;
 uint8_t command_byte = 0;
 uint8_t data_byte = 0;
 
-float new_desired_temperature = 50.0;
-float desired_temperature = 50.0;
+float new_desired_temperature = 23.0;
+float desired_temperature = 23.0;
 float temperature_error = 0;
 float previous_temperature_error = 0;
-float previous_temperature_error2 = 0;
-float read_temperature = 20.0;
 uint16_t raw_data = 0;
 uint32_t total_data = 0;
 float fractional_maximum = 0.0;
@@ -74,7 +73,7 @@ void setup() {
   pinMode(RELAY_PIN, OUTPUT);
     
   SPI.begin();
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // Setup the tempertature sensor interface
   
@@ -82,37 +81,51 @@ void setup() {
     {
         Serial.println("sensor init failed!!");
     }
-    Serial.println("sensor init!!");
+    //Serial.println("sensor init!!");
     initializeDisplayDriver();
+  scpi.initializeSCPI();
 }
 
 void loop() {
   if(heating_mode == false) digitalWrite(RELAY_PIN, LOW);
   else digitalWrite(RELAY_PIN, HIGH);
   
-  // put your main code here, to run repeatedly:
+        
     if(measurement_time_elapsed > MEASUREMENT_PERIOD) {
       measured_current = measureCurrent();
+      previous_temperature_error = temperature_error;
       measured_temperature = measureTemperature();
-      Serial.println(measured_temperature);
+      temperature_error = desired_temperature - measured_temperature;
+      
       controlTemperature();
       measurement_time_elapsed = 0;
       
     if(display_time_elapsed > DISPLAY_REFRESH_PERIOD) {
-      getTargetTemperature();
+      if(remote_control == false) { 
+        desired_temperature = getTargetTemperature();
+      }
+      else {
+        desired_temperature = SCPI::desired_temperature;
+      }
+      
       setpoint_display.writeTemperature(desired_temperature);
       actual_display.writeTemperature(measured_temperature);
       display_time_elapsed = 0;
     }    
   }
+  if(Serial.available()) {
+    int read_length = Serial.readBytesUntil('\n', SCPI::line_buffer, 256);
+    if(read_length > 0) {
+        scpi_execute_command(&SCPI::ctx, SCPI::line_buffer, read_length);
+    }
+  }
 }
-
 
 
 // Gets the target temperature by reading our analog potentiometer.
 // A read value of 0V (0%) corresponds to -25C, and a value of 5V (100%)
 // corresponds to +65C
-void getTargetTemperature(void) {
+float getTargetTemperature(void) {
   total_data = 0;
   for(int i=0; i<SAMPLES_TO_AVERAGE; i++) {
     total_data += 1023 - analogRead(TSET_PIN);
@@ -123,9 +136,10 @@ void getTargetTemperature(void) {
   new_desired_temperature = TEMPERATURE_MIN + fractional_maximum * (TEMPERATURE_MAX - TEMPERATURE_MIN);
   
   // Add in a bit of hysteresis so that the display doesn't fluctuate
-  if(abs(new_desired_temperature - desired_temperature) > 0.15) {
-    desired_temperature = new_desired_temperature;
+  if(abs(new_desired_temperature - desired_temperature) < 0.15) {
+    new_desired_temperature = desired_temperature;
   }
+  return new_desired_temperature;
 }
 
 void getTargetCurrent(void) {
@@ -170,12 +184,11 @@ float measureCurrent(void) {
 }
 
 float measureTemperature(void) {
-  previous_temperature_error2 = previous_temperature_error;
-  previous_temperature_error = temperature_error;
+  
   float temp=0;
   //Get temperature ,a float-form value.
   sensor.get_temp(&temp);
-  temperature_error = desired_temperature - temp;
+  SCPI::current_temperature = temp;
   return temp;
 }
 
