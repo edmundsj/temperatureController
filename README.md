@@ -1,10 +1,10 @@
-## TEC Temperature Controller PCB
-=================================
-This PCB is designed to monitor and control the temperature of an object heated or cooled with a thermoelectric cooler, and is capable of driving up to 8A
+# TEC Temperature Controller PCB
+This PCB is designed to monitor and control the temperature of an object heated or cooled with a thermoelectric cooler (TEC), and is capable of driving up to 8A
 
 ## Features
 - TEC temperature regulation within 0.1C using PI control
 - 1% settling time of ~90s 
+- Bidirectional temp. control (heating and cooling) 
 - 6A max current with 8-bit current monitoring (~25mA accuracy)
 - Computer-independent measurement and temperature control using on-board interface
 - Can be powered over USB (current limited by driving source)
