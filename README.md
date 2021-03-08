@@ -3,6 +3,7 @@ This PCB is designed to monitor and control the temperature of an object heated 
 
 ## Features
 - TEC temperature regulation within 0.1C using PI control
+- Max TEC Voltage/current of 3.6V/6A when powered off 5V
 - 1% settling time of ~90s 
 - Bidirectional temp. control (heating and cooling) 
 - 6A max current with 8-bit current monitoring (~25mA accuracy)
