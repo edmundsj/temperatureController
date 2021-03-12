@@ -15,10 +15,10 @@ This PCB is designed to monitor and control the temperature of an object heated 
 - Passive cooling (~4K/W thermal resistance) with 1.5" radial heatsink
 - Arduino nano-based
 
-![Populated PCB](/images/temperature_controller_populated_pcb.png)
+![Populated PCB](./images/temperature_controller_populated_pcb.png)
 Fully populated PCB
 
-![Unpopulated PCB](/images/temperature_controller_unpopulated_pcb.png)
+![Unpopulated PCB](./images/temperature_controller_unpopulated_pcb.png)
 Unpopulated, as-fabricated PCB
 
 
