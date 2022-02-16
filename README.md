@@ -54,5 +54,8 @@ system around, that is ~6A.
 - Standoffs should be as far to the outside to avoid tipping the board when using screw terminals
 - Need to add test piont for VDR_F. 
 - C4 should be removed. We have no business filtering a voltage going to the base of the BJT.
+- Add probe points for communication interface for easier debugging. 
+- Add probe points for ground silkscreen
+- Decouple VDD of arduino and TEC.
 
 ## Acknowledgements
